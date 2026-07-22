@@ -1,71 +1,49 @@
 # Advanced Text Encryption Tool (AES, TripleDES, RSA)
 
-This project provides a robust utility for encrypting and decrypting text using modern cryptographic algorithms. It includes both a Graphical User Interface (GUI) and a Command-Line Interface (CLI).
+A shell-based cryptographic utility using OpenSSL for symmetric and asymmetric encryption.
 
-## Features
-- **AES (Symmetric)**: Uses Fernet (AES-128 in CBC mode with SHA256 HMAC) for secure symmetric encryption.
-- **TripleDES (Symmetric)**: Uses TripleDES with a 24-byte key in CBC mode.
-- **RSA (Asymmetric)**: Uses 2048-bit RSA keys with OAEP padding (SHA256).
-- **Key Management**: Proper key generation, storage, and loading functionality.
-- **Dual Interface**: Modern GUI built with Tkinter and a powerful CLI for automation.
+## Ideology
+Encryption is a fundamental building block of information security. Understanding how different algorithms serve different purposes — symmetric for speed (AES, 3DES), asymmetric for key exchange (RSA) — is essential for designing secure systems.
 
-## Requirements
-- Python 3.x
-- `cryptography` library
+## Algorithms
+| Algorithm | Type | Key Size | Use Case |
+|-----------|------|----------|----------|
+| AES-256 | Symmetric | 256-bit | General-purpose encryption |
+| TripleDES | Symmetric | 192-bit | Legacy system compatibility |
+| RSA | Asymmetric | 2048-bit | Key exchange, digital signatures |
 
-Install dependencies:
+## Usage
 ```bash
-pip install cryptography
+chmod +x crypto.sh
+
+# AES
+./crypto.sh aes-gen
+./crypto.sh aes-enc "Hello World"
+./crypto.sh aes-dec "U2FsdGVkX1..."
+
+# TripleDES
+./crypto.sh des-gen
+./crypto.sh des-enc "Hello World"
+./crypto.sh des-dec "base64_ciphertext"
+
+# RSA
+./crypto.sh rsa-gen
+./crypto.sh rsa-enc "Secret message"
+./crypto.sh rsa-dec "base64_ciphertext"
 ```
 
-## CLI Usage
-The CLI tool `encryption_cli.py` supports key generation, encryption, and decryption.
+## Key Management
+Keys are stored in `./keys/` directory:
+- `aes.key` — AES-256 key (base64)
+- `des.key` — 3DES key (base64)
+- `rsa_priv.pem` — RSA private key
+- `rsa_pub.pem` — RSA public key
 
-### 1. Key Generation
-```bash
-# Generate AES key
-python3 encryption_cli.py aes keygen --out aes.key
+## Security Notes
+- Uses PBKDF2 with 100,000 iterations for key derivation
+- RSA uses OAEP padding with SHA-256
+- 3DES included for educational purposes — AES is recommended for production
 
-# Generate RSA key pair
-python3 encryption_cli.py rsa keygen --out rsa_priv.pem
-
-# Generate TripleDES key
-python3 encryption_cli.py des keygen --out des.key
-```
-
-### 2. Encryption
-```bash
-# Encrypt with AES
-python3 encryption_cli.py aes encrypt --text "Hello World" --key aes.key
-
-# Encrypt with RSA (using public key)
-python3 encryption_cli.py rsa encrypt --text "Hello World" --key rsa_priv.pem.pub
-```
-
-### 3. Decryption
-```bash
-# Decrypt with AES
-python3 encryption_cli.py aes decrypt --text <hex_data> --key aes.key
-
-# Decrypt with RSA (using private key)
-python3 encryption_cli.py rsa decrypt --text <hex_data> --key rsa_priv.pem
-```
-
-## GUI Usage
-Run the GUI application:
-```bash
-python3 encryption_gui.py
-```
-The GUI allows you to:
-1. Generate keys and save them to files.
-2. Select key files for encryption/decryption.
-3. View results in a popup window.
-
-## Project Structure
-- `crypto_utils.py`: Core cryptographic logic using the `cryptography` library.
-- `encryption_gui.py`: Graphical user interface.
-- `encryption_cli.py`: Command-line interface.
-- `README.md`: Project documentation.
-
-## Security Note
-This project uses the `cryptography` library, which is a modern and secure library for Python. However, TripleDES is included for educational purposes and is generally considered less secure than AES. For most use cases, AES is recommended.
+## Dependencies
+- OpenSSL (`openssl` CLI)
+- `base64` (GNU coreutils)
