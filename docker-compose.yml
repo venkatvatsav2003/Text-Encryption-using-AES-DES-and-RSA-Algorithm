@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  crypto:
+    build: .
+    volumes:
+      - ./keys:/crypto/keys
+      - ./config:/crypto/config:ro
+    stdin_open: true
+    tty: true
+    command: help

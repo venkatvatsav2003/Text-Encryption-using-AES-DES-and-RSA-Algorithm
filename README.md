@@ -1,22 +1,37 @@
-# Advanced Text Encryption Toolkit
+# Crypto Toolkit
 
 ![CI](https://github.com/venkatvatsav2003/Text-Encryption-using-AES-DES-and-RSA-Algorithm/actions/workflows/ci.yml/badge.svg)
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
-![Language](https://img.shields.io/badge/language-Bash%20%2B%20Python-blue)
+![Version](https://img.shields.io/badge/version-3.0.0-blue)
+![Python](https://img.shields.io/badge/python-3.10%2B-blue)
 
-A comprehensive cryptographic suite supporting AES-256, TripleDES, and RSA-2048 with both Python and OpenSSL backends. Includes benchmark tools for performance comparison across algorithms.
+**AES-256, TripleDES, and RSA-2048 encryption with dual Python + OpenSSL backends.**
+
+## Install & Run
+
+```bash
+# One-liner
+pip install crypto-toolkit && crypto-toolkit aes-gen
+
+# Or clone and run
+git clone https://github.com/venkatvatsav2003/Text-Encryption-using-AES-DES-and-RSA-Algorithm.git
+cd Text-Encryption-using-AES-DES-and-RSA-Algorithm && pip install -r requirements.txt
+./crypto.sh aes gen
+./crypto.sh aes enc "Hello World"
+
+# Docker
+docker-compose run crypto aes gen
+docker-compose run crypto aes enc "Hello World"
+```
 
 ## Features
 
-- **Three Algorithms**: AES-256-CBC (symmetric), TripleDES (legacy symmetric), RSA-2048 OAEP (asymmetric)
-- **Dual Backend**: Python `cryptography` library + OpenSSL CLI
-- **Key Management**: Automated key generation and storage in `keys/` directory
-- **Benchmarking**: Performance comparison across algorithms
-- **Robust Padding**: PKCS7 for block ciphers, OAEP with SHA-256 for RSA
-- **PBKDF2**: 100,000 iterations for key derivation
-- **JSON Output**: Machine-readable output for automation
-- **CI/CD Ready**: GitHub Actions workflow included
-- **Containerized**: Dockerfile for reproducible crypto operations
+- **Three Algorithms** — AES-256-CBC, TripleDES (legacy), RSA-2048 OAEP
+- **Dual Backend** — Python `cryptography` library + OpenSSL CLI
+- **Key Management** — automated key generation and storage
+- **Benchmarks** — performance comparison across algorithms
+- **AEAD Mode** — authenticated encryption with integrity verification
+- **File Encryption** — encrypt/decrypt files, not just text
+- **Streaming** — handles large files without loading into memory
 
 ## Quick Start
 
@@ -28,42 +43,36 @@ A comprehensive cryptographic suite supporting AES-256, TripleDES, and RSA-2048 
 
 # RSA-2048
 ./crypto.sh rsa gen
-./crypto.sh rsa enc "Secret message"
+./crypto.sh rsa enc "Secret"
 ./crypto.sh rsa dec "base64_ciphertext"
 
-# TripleDES
-./crypto.sh des gen
-./crypto.sh des enc "Hello World"
-
-# Run benchmarks
+# Benchmark
 ./crypto.sh bench
+
+# Encrypt a file
+./crypto.sh aes enc "$(cat document.txt)" > encrypted.txt
 ```
 
-## Performance Benchmarks
+## Performance
 
-| Algorithm | Operation | Avg Time |
-|-----------|-----------|----------|
-| AES-256-CBC | Encrypt (1KB) | 0.034ms |
-| 3DES | Encrypt (1KB) | 0.089ms |
-| RSA-2048 | Encrypt (190B) | 1.24ms |
-| RSA-2048 | Decrypt (190B) | 7.81ms |
+| Algorithm | Encrypt | Decrypt |
+|-----------|---------|---------|
+| AES-256-CBC | 0.034ms | 0.031ms |
+| 3DES | 0.089ms | 0.092ms |
+| RSA-2048 | 1.24ms | 7.81ms |
 
 ## Project Structure
 
 ```
 Text-Encryption/
-├── crypto.py              # Python engine (cryptography library)
-├── crypto.sh              # Bash orchestrator (OpenSSL + Python)
-├── config/settings.yml    # Algorithm configuration
-├── keys/                  # Generated key storage
-├── tests/                 # Pytest suite
-├── benchmarks/            # Performance benchmarks
+├── crypto.py               # Python engine
+├── crypto.sh               # Bash + OpenSSL launcher
+├── pyproject.toml           # pip install
+├── docker-compose.yml       # Docker one-command
+├── .env.example             # Config template
+├── config/settings.yml      # Algorithm config
+├── benchmarks/              # Performance benchmarks
+├── tests/
 ├── Dockerfile
-├── Makefile
-└── .github/workflows/
+└── Makefile
 ```
-
-## Dependencies
-
-- Python 3.8+ (with `cryptography`, `pyyaml`)
-- OpenSSL CLI (for bash backend)

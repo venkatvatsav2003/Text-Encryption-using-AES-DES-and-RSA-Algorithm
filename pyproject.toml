@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crypto-toolkit"
+version = "3.0.0"
+description = "AES-256, TripleDES, and RSA-2048 encryption suite with dual Python/OpenSSL backends"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Venkat Vatsav"},
+]
+requires-python = ">=3.10"
+dependencies = [
+    "cryptography>=41.0.0",
+    "pyyaml>=6.0",
+]
+optional-dependencies = {
+    "dev": ["pytest>=7.4", "flake8>=6.1"],
+}
+
+[project.urls]
+homepage = "https://github.com/venkatvatsav2003/Text-Encryption-using-AES-DES-and-RSA-Algorithm"
+
+[project.scripts]
+crypto-toolkit = "crypto:main"
+
+[tool.setuptools]
+packages = ["crypto_toolkit"]
+package-dir = {"crypto_toolkit" = "."}
