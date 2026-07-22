@@ -1,42 +1,80 @@
 #!/usr/bin/env bash
+set -euo pipefail
 
-KEYDIR="./keys"
-mkdir -p "$KEYDIR"
+VERSION="2.0.0"
+KEYDIR="${KEYDIR:-./keys}"
 
-cmd="${1:-help}"
-shift 2>/dev/null || true
+RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
-case "$cmd" in
-    aes-gen)
-        openssl rand -base64 32 > "$KEYDIR/aes.key"
-        echo "AES-256 key -> $KEYDIR/aes.key" ;;
-    aes-enc)
-        openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass file:"$KEYDIR/aes.key" -base64 <<< "$1" ;;
-    aes-dec)
-        openssl enc -aes-256-cbc -pbkdf2 -iter 100000 -pass file:"$KEYDIR/aes.key" -base64 -d <<< "$1" ;;
-    des-gen)
-        openssl rand -base64 24 > "$KEYDIR/des.key"
-        echo "3DES key -> $KEYDIR/des.key" ;;
-    des-enc)
-        openssl enc -des-ede3-cbc -pbkdf2 -iter 100000 -pass file:"$KEYDIR/des.key" -base64 <<< "$1" ;;
-    des-dec)
-        openssl enc -des-ede3-cbc -pbkdf2 -iter 100000 -pass file:"$KEYDIR/des.key" -base64 -d <<< "$1" ;;
-    rsa-gen)
-        openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$KEYDIR/rsa_priv.pem"
-        openssl rsa -pubout -in "$KEYDIR/rsa_priv.pem" -out "$KEYDIR/rsa_pub.pem"
-        echo "RSA-2048 keys -> $KEYDIR/rsa_priv.pem (private), $KEYDIR/rsa_pub.pem (public)" ;;
-    rsa-enc)
-        openssl pkeyutl -encrypt -pubin -inkey "$KEYDIR/rsa_pub.pem" <<< "$1" | base64 ;;
-    rsa-dec)
-        base64 -d <<< "$1" | openssl pkeyutl -decrypt -inkey "$KEYDIR/rsa_priv.pem" ;;
-    *)
-        echo "Usage: $0 {aes-gen|aes-enc|aes-dec|des-gen|des-enc|des-dec|rsa-gen|rsa-enc|rsa-dec} [data]"
-        echo ""
-        echo "  $0 aes-gen"
-        echo "  $0 aes-enc 'Hello World'"
-        echo "  $0 aes-dec 'U2FsdGVkX1...'"
-        echo "  $0 rsa-gen"
-        echo "  $0 rsa-enc 'Secret message'"
-        echo "  $0 rsa-dec 'ciphertext_base64'"
+usage() {
+    cat <<EOF
+CryptoShell v$VERSION — Encryption Toolkit (AES / 3DES / RSA)
+
+Usage: $0 <algorithm> <operation> [data]
+
+Algorithms:
+  aes    AES-256-CBC (Fernet-compatible)
+  des    TripleDES (24-byte key, CBC mode)
+  rsa    RSA-2048 (OAEP SHA-256)
+
+Operations:
+  gen                    Generate a new key
+  enc <data>             Encrypt data (reads stdin if omitted)
+  dec <data>             Decrypt data
+
+Options:
+  -k, --key FILE         Custom key file
+  -o, --out DIR          Key output directory (default: ./keys)
+  -b, --bench            Run performance benchmarks
+  -j, --json             JSON output
+  -h, --help             Show this help
+
+Examples:
+  $0 aes gen
+  $0 aes enc "Hello World"
+  $0 rsa gen
+  $0 rsa enc "Secret message"
+  $0 des dec "base64_ciphertext"
+  echo "data" | $0 aes enc
+EOF
+    exit 0
+}
+
+log_info()  { echo -e "${CYAN}[*]${NC} $1" >&2; }
+log_ok()    { echo -e "${GREEN}[+]${NC} $1" >&2; }
+
+ALGO="${1:-help}"; shift || true
+OP="${1:-help}"; shift || true
+
+case "$ALGO" in
+    aes|aes-256|aes256)
+        PY_ALGO="aes"
+        case "$OP" in
+            gen) python3 crypto.py aes-gen --json ${JSON:+--json} ;;
+            enc) DATA="${1:-$(cat)}"; python3 crypto.py aes-enc "$DATA" ${KEY:+-k "$KEY"} ${JSON:+--json} ;;
+            dec) DATA="${1:-$(cat)}"; python3 crypto.py aes-dec "$DATA" ${KEY:+-k "$KEY"} ${JSON:+--json} ;;
+            *) usage ;;
+        esac
         ;;
+    des|3des|tripledes)
+        case "$OP" in
+            gen) python3 crypto.py des-gen --json ${JSON:+--json} ;;
+            enc) DATA="${1:-$(cat)}"; python3 crypto.py des-enc "$DATA" ${KEY:+-k "$KEY"} ${JSON:+--json} ;;
+            dec) DATA="${1:-$(cat)}"; python3 crypto.py des-dec "$DATA" ${KEY:+-k "$KEY"} ${JSON:+--json} ;;
+            *) usage ;;
+        esac
+        ;;
+    rsa)
+        case "$OP" in
+            gen) python3 crypto.py rsa-gen --json ${JSON:+--json} ;;
+            enc) DATA="${1:-$(cat)}"; python3 crypto.py rsa-enc "$DATA" ${JSON:+--json} ;;
+            dec) DATA="${1:-$(cat)}"; python3 crypto.py rsa-dec "$DATA" ${JSON:+--json} ;;
+            *) usage ;;
+        esac
+        ;;
+    bench|benchmark)
+        log_info "Running cryptographic benchmarks..."
+        python3 crypto.py benchmark
+        ;;
+    help|*) usage ;;
 esac

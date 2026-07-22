@@ -1,0 +1,16 @@
+crypto:
+  default_algorithm: aes
+  key_dir: keys
+  key_size:
+    aes: 256
+    des: 192
+    rsa: 2048
+  iterations: 100000
+  hash_algorithm: SHA256
+  padding: OAEP
+benchmarks:
+  iterations: 1000
+  rsa_iterations: 50
+  sample_data_size: 500
+logging:
+  level: INFO
